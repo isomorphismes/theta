@@ -12,6 +12,9 @@
     "plotly.js-dist-min": "3.7.0",
     "three": "0.185.1"
   },
+  "overrides": {
+    "@luma.gl/gltf": "9.3.6"
+  },
   "devDependencies": {
     "esbuild": "0.28.2"
   }
