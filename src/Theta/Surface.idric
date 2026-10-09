@@ -21,7 +21,7 @@ coordinate : Nat → Nat → Scalar
 coordinate count index =
   if count <= 1
   then 0.0
-  else -0.5 + cast index / cast (nat_predecessor count)
+  else -0.5 + cast index ÷ cast (nat_predecessor count)
 
 terms_for : interaction_quality → Nat
 terms_for touching = 6

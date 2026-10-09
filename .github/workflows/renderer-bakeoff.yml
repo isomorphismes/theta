@@ -91,12 +91,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build current Edric compiler
+      - name: Check out Idriç with division glyph support
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          repository: isomorphisms/Idric
+          ref: 94dfd99bd3e376507fedc8611053b7173b2519f0
+          path: .idric-toolchain
+
+      - name: Build pinned Idriç compiler
+        working-directory: .idric-toolchain
         shell: sh
         run: |
           set -eu
-          git clone --depth 1 https://github.com/isomorphisms/Idric.git /tmp/Idric
-          cd /tmp/Idric
           ./edric scheme
           export PATH="$PWD/.tools/bin:$PATH"
           ./edric bootstrap
@@ -106,8 +112,9 @@ jobs:
         run: |
           set -eu
           cd src
-          IDRIS2_PATH="/tmp/Idric/libs/prelude/build/ttc:/tmp/Idric/libs/base/build/ttc" \
-            /tmp/Idric/build/exec/idris2 --check Main.idric
+          IDRIS2_PREFIX="$GITHUB_WORKSPACE/.idric-toolchain/_/bootstrap-build" \
+          IDRIS2_PATH="$GITHUB_WORKSPACE/.idric-toolchain/_/libs/prelude/build/ttc:$GITHUB_WORKSPACE/.idric-toolchain/_/libs/base/build/ttc" \
+            "$GITHUB_WORKSPACE/.idric-toolchain/_/build/exec/idris2" --check Main.idric
 
       - name: Compile Edric phone runtime to browser JavaScript
         shell: sh
@@ -115,9 +122,10 @@ jobs:
           set -eu
           mkdir -p generated
           cd src
-          IDRIS2_DATA="/tmp/Idric/support" \
-          IDRIS2_PATH="/tmp/Idric/libs/prelude/build/ttc:/tmp/Idric/libs/base/build/ttc" \
-            /tmp/Idric/build/exec/idris2 \
+          IDRIS2_PREFIX="$GITHUB_WORKSPACE/.idric-toolchain/_/bootstrap-build" \
+          IDRIS2_DATA="$GITHUB_WORKSPACE/.idric-toolchain/_/support" \
+          IDRIS2_PATH="$GITHUB_WORKSPACE/.idric-toolchain/_/libs/prelude/build/ttc:$GITHUB_WORKSPACE/.idric-toolchain/_/libs/base/build/ttc" \
+            "$GITHUB_WORKSPACE/.idric-toolchain/_/build/exec/idris2" \
             --cg javascript \
             --directive compact \
             --output-dir ../generated \
