@@ -10,6 +10,7 @@ on:
       - 'android/**'
       - 'scripts/**'
       - 'package.json'
+      - 'package-lock.json'
       - 'docs/renderer-bakeoff.md'
       - '.github/workflows/renderer-bakeoff.yml'
 
@@ -17,7 +18,10 @@ jobs:
   source-boundaries:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Refuse Python source in the bakeoff
         shell: sh
@@ -41,16 +45,19 @@ jobs:
   web-assets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Bundle renderer libraries
         shell: sh
         run: |
           set -eu
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run bundle
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: theta-bakeoff-web-assets
           path: android/app/src/main/assets/bakeoff.js
@@ -59,7 +66,10 @@ jobs:
   android-shell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Add temporary generated assets
         shell: sh
@@ -71,12 +81,12 @@ jobs:
           printf '%s\n' '// Edriç runtime supplied by the full build.' \
             > android/app/src/main/assets/theta-edric.js
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
         with:
           gradle-version: '9.5.0'
 
@@ -89,14 +99,23 @@ jobs:
   edric-runtime:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
-      - name: Build current Edric compiler
+      - name: Check out Idriç with division glyph support
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          repository: isomorphisms/Idric
+          ref: 94dfd99bd3e376507fedc8611053b7173b2519f0
+          path: .idric-toolchain
+
+      - name: Build pinned Idriç compiler
+        working-directory: .idric-toolchain
         shell: sh
         run: |
           set -eu
-          git clone --depth 1 https://github.com/isomorphisms/Idric.git /tmp/Idric
-          cd /tmp/Idric
           ./edric scheme
           export PATH="$PWD/.tools/bin:$PATH"
           ./edric bootstrap
@@ -106,8 +125,9 @@ jobs:
         run: |
           set -eu
           cd src
-          IDRIS2_PATH="/tmp/Idric/libs/prelude/build/ttc:/tmp/Idric/libs/base/build/ttc" \
-            /tmp/Idric/build/exec/idris2 --check Main.idric
+          IDRIS2_PREFIX="$GITHUB_WORKSPACE/.idric-toolchain/_/bootstrap-build" \
+          IDRIS2_PATH="$GITHUB_WORKSPACE/.idric-toolchain/_/libs/prelude/build/ttc:$GITHUB_WORKSPACE/.idric-toolchain/_/libs/base/build/ttc" \
+            "$GITHUB_WORKSPACE/.idric-toolchain/_/build/exec/idris2" --check Main.idric
 
       - name: Compile Edric phone runtime to browser JavaScript
         shell: sh
@@ -115,16 +135,17 @@ jobs:
           set -eu
           mkdir -p generated
           cd src
-          IDRIS2_DATA="/tmp/Idric/support" \
-          IDRIS2_PATH="/tmp/Idric/libs/prelude/build/ttc:/tmp/Idric/libs/base/build/ttc" \
-            /tmp/Idric/build/exec/idris2 \
+          IDRIS2_PREFIX="$GITHUB_WORKSPACE/.idric-toolchain/_/bootstrap-build" \
+          IDRIS2_DATA="$GITHUB_WORKSPACE/.idric-toolchain/_/support" \
+          IDRIS2_PATH="$GITHUB_WORKSPACE/.idric-toolchain/_/libs/prelude/build/ttc:$GITHUB_WORKSPACE/.idric-toolchain/_/libs/base/build/ttc" \
+            "$GITHUB_WORKSPACE/.idric-toolchain/_/build/exec/idris2" \
             --cg javascript \
             --directive compact \
             --output-dir ../generated \
             -o theta-edric.js \
             BrowserMain.idric
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: theta-bakeoff-edric-runtime
           path: generated/theta-edric.js
@@ -134,24 +155,27 @@ jobs:
     needs: [source-boundaries, web-assets, android-shell, edric-runtime]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: theta-bakeoff-web-assets
           path: android/app/src/main/assets
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: theta-bakeoff-edric-runtime
           path: android/app/src/main/assets
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
         with:
           gradle-version: '9.5.0'
 
@@ -163,7 +187,7 @@ jobs:
           test -s android/app/src/main/assets/theta-edric.js
           gradle -p android :app:assembleDebug
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: theta-renderer-bakeoff-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk

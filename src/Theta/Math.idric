@@ -45,11 +45,11 @@ argument : ComplexValue → Scalar
 argument value =
   let horizontal = real value
       vertical = imaginary value
-   in if horizontal > 0.0 then atan (vertical / horizontal)
-      else if horizontal < 0.0 && vertical >= 0.0 then atan (vertical / horizontal) + Theta.Math.pi
-      else if horizontal < 0.0 then atan (vertical / horizontal) - Theta.Math.pi
-      else if vertical > 0.0 then Theta.Math.pi / 2.0
-      else if vertical < 0.0 then -Theta.Math.pi / 2.0
+   in if horizontal > 0.0 then atan (vertical ÷ horizontal)
+      else if horizontal < 0.0 && vertical >= 0.0 then atan (vertical ÷ horizontal) + Theta.Math.pi
+      else if horizontal < 0.0 then atan (vertical ÷ horizontal) - Theta.Math.pi
+      else if vertical > 0.0 then Theta.Math.pi ÷ 2.0
+      else if vertical < 0.0 then -Theta.Math.pi ÷ 2.0
       else 0.0
 
 nat_indices_from : Nat → Nat → List Nat
@@ -95,23 +95,23 @@ srgb_component linear_value =
   let value = max linear_value 0.0
    in if value <= 0.0031308
       then 12.92 * value
-      else 1.055 * positive_power value (1.0 / 2.4) - 0.055
+      else 1.055 * positive_power value (1.0 ÷ 2.4) - 0.055
 
 public export
 hcl_to_rgb : Scalar → Scalar → Scalar → RGB
 hcl_to_rgb hue_degrees chroma lightness =
-  let hue = hue_degrees * Theta.Math.pi / 180.0
+  let hue = hue_degrees * Theta.Math.pi ÷ 180.0
       u_star = chroma * cos hue
       v_star = chroma * sin hue
       white_u_prime = 0.19783982482140777
       white_v_prime = 0.46833630293240974
       y = if lightness > 8.0
-          then let scaled = (lightness + 16.0) / 116.0 in scaled * scaled * scaled
-          else lightness / 903.2962962962963
-      u_prime = u_star / (13.0 * lightness) + white_u_prime
-      v_prime = v_star / (13.0 * lightness) + white_v_prime
-      x_value = (9.0 * y * u_prime) / (4.0 * v_prime)
-      z_value = y * (12.0 - 3.0 * u_prime - 20.0 * v_prime) / (4.0 * v_prime)
+          then let scaled = (lightness + 16.0) ÷ 116.0 in scaled * scaled * scaled
+          else lightness ÷ 903.2962962962963
+      u_prime = u_star ÷ (13.0 * lightness) + white_u_prime
+      v_prime = v_star ÷ (13.0 * lightness) + white_v_prime
+      x_value = (9.0 * y * u_prime) ÷ (4.0 * v_prime)
+      z_value = y * (12.0 - 3.0 * u_prime - 20.0 * v_prime) ÷ (4.0 * v_prime)
       linear_red = 3.2404542 * x_value - 1.5371385 * y - 0.4985314 * z_value
       linear_green = -0.9692660 * x_value + 1.8760108 * y + 0.0415560 * z_value
       linear_blue = 0.0556434 * x_value - 0.2040259 * y + 1.0572252 * z_value
@@ -125,21 +125,21 @@ wegert_rgb : ComplexValue → RGB
 wegert_rgb value =
   let phase_value = argument value
       magnitude_value = max (modulus value) 1.0e-12
-      hue_degrees = 360.0 * positive_fraction (phase_value / two_pi)
-      log_modulus_band = positive_fraction (log magnitude_value / 2.30258509299404568402)
+      hue_degrees = 360.0 * positive_fraction (phase_value ÷ two_pi)
+      log_modulus_band = positive_fraction (log magnitude_value ÷ 2.30258509299404568402)
       lightness = 66.0
                 + 4.0 * log_modulus_band
-                + 3.0 * positive_fraction (hue_degrees / 100.0)
+                + 3.0 * positive_fraction (hue_degrees ÷ 100.0)
    in hcl_to_rgb hue_degrees 45.0 lightness
 
 phase_rgb : ComplexValue → RGB
 phase_rgb value =
-  let hue_degrees = 360.0 * positive_fraction (argument value / two_pi)
+  let hue_degrees = 360.0 * positive_fraction (argument value ÷ two_pi)
    in hcl_to_rgb hue_degrees 45.0 70.0
 
 gray_rgb : ComplexValue → RGB
 gray_rgb value =
-  let amount = modulus value / (1.0 + modulus value)
+  let amount = modulus value ÷ (1.0 + modulus value)
    in RGBColor amount amount amount
 
 public export
