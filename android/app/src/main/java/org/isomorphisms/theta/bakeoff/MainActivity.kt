@@ -38,7 +38,7 @@ class MainActivity : Activity() {
         }
 
         webView = WebView(this).apply {
-            setBackgroundColor(Color.BLACK)
+            setBackgroundColor(getColor(R.color.charcoal_background))
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = false
             settings.allowFileAccess = true
@@ -86,7 +86,7 @@ class MainActivity : Activity() {
         fun setNativeVisible(visible: Boolean) {
             runOnUiThread {
                 nativeView.visibility = if (visible) View.VISIBLE else View.GONE
-                webView.setBackgroundColor(if (visible) Color.TRANSPARENT else Color.BLACK)
+                webView.setBackgroundColor(if (visible) Color.TRANSPARENT else getColor(R.color.charcoal_background))
                 if (visible) nativeView.requestRender()
             }
         }

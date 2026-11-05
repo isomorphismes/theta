@@ -67,7 +67,7 @@ class ThetaSurfaceRenderer : GLSurfaceView.Renderer {
         indexBuffer = names[2]
         GLES30.glEnable(GLES30.GL_DEPTH_TEST)
         GLES30.glDisable(GLES30.GL_CULL_FACE)
-        GLES30.glClearColor(0f, 0f, 0f, 1f)
+        GLES30.glClearColor(33f / 255f, 33f / 255f, 33f / 255f, 1f)
     }
 
     override fun onSurfaceChanged(unused: GL10?, width: Int, height: Int) {

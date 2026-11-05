@@ -49,8 +49,9 @@ export function createPlotlyAdapter(Plotly, element) {
 
   const layout = {
     margin: { l: 0, r: 0, t: 0, b: 0 },
-    paper_bgcolor: '#000',
+    paper_bgcolor: '#212121',
     scene: {
+      bgcolor: '#212121',
       xaxis: { visible: false },
       yaxis: { visible: false },
       zaxis: { visible: false },
