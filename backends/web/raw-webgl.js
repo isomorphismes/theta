@@ -128,7 +128,7 @@ export function createRawWebGLAdapter(canvas) {
 
   gl.enable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
-  gl.clearColor(0, 0, 0, 1);
+  gl.clearColor(33 / 255, 33 / 255, 33 / 255, 1);
 
   function upload(frame) {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);

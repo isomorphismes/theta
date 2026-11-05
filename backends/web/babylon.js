@@ -8,7 +8,7 @@ export function createBabylonAdapter(BABYLON, canvas) {
     powerPreference: 'high-performance'
   });
   const scene = new BABYLON.Scene(engine);
-  scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+  scene.clearColor = new BABYLON.Color4(33 / 255, 33 / 255, 33 / 255, 1);
 
   const camera = new BABYLON.FreeCamera(
     'camera',
